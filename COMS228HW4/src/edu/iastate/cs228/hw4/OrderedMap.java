@@ -85,7 +85,10 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
     //Put the successors data in the removal spot.
     current.data = successor.data;    
     
-    
+    //Successor should never have more than one child, so we are free to call removeNode to do our dirty work
+    removeNode(successor);
+    size--;
+    return true;
   }
 
   public Iterator<O> keyIterator()
@@ -243,6 +246,8 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
       return;
     }
     
+    //Changes the parent's child to the successor node.
+    //Will work correctly even if there is no successor
     if(node.equals(parent.leftChild))
     {
       parent.leftChild = child;
