@@ -55,6 +55,31 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
 
   public boolean remove(Object orderingKey)
   {
+    O key = (O) orderingKey;
+    BSTNode<O> current = root;
+    
+    boolean foundKey = false;
+    while(!foundKey)
+    {
+      if(key.compareTo(current.data) < 0)
+      {
+        current = current.leftChild;
+      }
+      else if(key.compareTo(current.data) > 0)
+      {
+        current = current.rightChild;
+      }
+      else
+      {
+        foundKey = true;
+      }
+      
+      if(current == null)
+        return false;
+    }
+    
+    BSTNode<O> successor = successor(current);
+    
     
   }
 
@@ -159,7 +184,7 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
    * @param current - The node for which we want to find a successor.
    * @return The node that succeeds the given node.
    */
-  public BSTNode<O> successor(BSTNode<O> current)
+  private BSTNode<O> successor(BSTNode<O> current)
   {
     //If there are no children, there is no successor.
     if(current.leftChild == null && current.rightChild == null)
