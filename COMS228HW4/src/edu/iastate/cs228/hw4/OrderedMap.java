@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * @author Zach
+ * @author Zach Greif
  *
  */
 public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMapInterface<O, M>
@@ -78,7 +78,12 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
         return false;
     }
     
+    //Find the successor node.
     BSTNode<O> successor = successor(current);
+    
+    
+    //Put the successors data in the removal spot.
+    current.data = successor.data;    
     
     
   }
@@ -91,25 +96,23 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
 
   public boolean containsOrderingKey(Object orderingKey)
   {
-    // TODO Auto-generated method stub
-    return false;
+    //Map conveniently does this for us.
+    return map.containsKey(orderingKey);
   }
 
   public boolean containsMapValue(Object mapValue)
   {
-    // TODO Auto-generated method stub
-    return false;
+    //Map conveniently does this for us.
+    return map.containsValue(mapValue);
   }
 
   public ArrayList<O> keysInAscendingOrder()
   {
-    // TODO Auto-generated method stub
     return null;
   }
 
   public ArrayList<M> valuesInAscendingOrder()
   {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -121,7 +124,7 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
 
   public OrderedMapInterface<O, M> subMap(O fromKey, O toKey)
   {
-    // TODO Auto-generated method stub
+    
     return null;
   }
 
@@ -214,6 +217,47 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
         }
       }
       return successor;
+    }
+  }
+  
+  /**
+   * Removes a node from the BST assuming it has either one or zero children.
+   * @param node - The node to be removed from the graph.
+   * @throws IllegalArgumentException If node has two children.
+   */
+  private void removeNode(BSTNode<O> node)
+  {
+    //We only remove nodes with zero or one children
+    if(node.leftChild != null && node.rightChild != null)
+      throw new IllegalArgumentException();
+    
+    BSTNode<O> parent = node.parent;
+    BSTNode<O> child = successor(node);
+    
+    //If the node has no parent, it must be the root.
+    if(parent == null)
+    {
+      //We nullify the child's parent and set the root to the child
+      child.parent = null;
+      root = child;
+      return;
+    }
+    
+    if(node.equals(parent.leftChild))
+    {
+      parent.leftChild = child;
+      if(child != null)
+      {
+        child.parent = parent;
+      }
+    }
+    else //node.equals(parent.rightChild)
+    {
+      parent.rightChild = child;
+      if(child != null)
+      {
+        child.parent = parent;
+      }
     }
   }
 }
