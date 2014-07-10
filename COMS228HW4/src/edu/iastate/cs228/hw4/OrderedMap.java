@@ -92,11 +92,20 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
     BSTNode<O> successor = successor(current);
     
     
-    //Put the successors data in the removal spot.
-    current.data = successor.data;    
     
-    //Successor should never have more than one child, so we are free to call removeNode to do our dirty work
-    removeNode(successor);
+    if(successor != null)
+    {
+      //Put the successors data in the removal spot.
+      current.data = successor.data;    
+      
+      //Successor should never have more than one child, so we are free to call removeNode to do our dirty work
+      removeNode(successor);
+    }
+    
+    //if there is no successor, the node must be a leaf
+    else
+      removeNode(current);
+    
     size--;
     return true;
   }
@@ -164,7 +173,11 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
   public O ceiling(O orderingKey)
   {
     BSTNode<O> current = root;
-    return null;
+    BSTNode<O> largest = null;
+    while(current != null)
+    {
+      
+    }
   }
 
   public OrderedMapInterface<O, M> subMap(O fromKey, O toKey)
@@ -328,7 +341,8 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
     if(parent == null)
     {
       //We nullify the child's parent and set the root to the child
-      child.parent = null;
+      if(child != null)
+        child.parent = null;
       root = child;
       return;
     }
