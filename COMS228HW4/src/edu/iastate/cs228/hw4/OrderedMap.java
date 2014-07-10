@@ -381,16 +381,16 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
     
     public boolean hasNext()
     {
-      return cursor < size;
+      return cursor < keys.size();
     }
-
+    
     public O next()
     {
       cursor++;
       removeAllowed = true;
       return keys.get(cursor - 1);
     }
-
+    
     public void remove()
     {
       if(removeAllowed)
