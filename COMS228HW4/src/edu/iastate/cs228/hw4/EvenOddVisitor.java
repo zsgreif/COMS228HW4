@@ -10,4 +10,13 @@ public class EvenOddVisitor<O extends Comparable<? super O>> implements Visitor<
     
   }
   
+  public int getNumEvens()
+  {
+    return this.evenNums;
+  }
+  
+  public int getNumOdds()
+  {
+    return this.oddNums;
+  }
 }

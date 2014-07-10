@@ -1,0 +1,6 @@
+How does EvenOddVisitor convert data to an integer?
+
+Are we allowed to store all the nodes in an ArrayList for Iterator?
+
+Is ceiling strictly greater than? not greater than or equal to?
+

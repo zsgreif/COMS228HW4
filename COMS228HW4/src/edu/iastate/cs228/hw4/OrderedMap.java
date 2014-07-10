@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * @author Zach Greif
@@ -21,6 +22,8 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
   public OrderedMap()
   {
     map = new HashMap<O, M>();
+    root = null;
+    size = 0;
   }
   
   public void clear()
@@ -55,12 +58,22 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
 
   public boolean remove(Object orderingKey)
   {
+    //Cast to a key.
+    //Will throw an error if the value isn't the right type, but we would just throw an error anyway.
     O key = (O) orderingKey;
+    
+    //Start searching for the node at the root
     BSTNode<O> current = root;
     
     boolean foundKey = false;
+    
+    //Find the key using binary search
     while(!foundKey)
     {
+      //If the node is null, we haven't found it.
+      if(current == null)
+        return false;
+      
       if(key.compareTo(current.data) < 0)
       {
         current = current.leftChild;
@@ -73,9 +86,6 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
       {
         foundKey = true;
       }
-      
-      if(current == null)
-        return false;
     }
     
     //Find the successor node.
@@ -93,8 +103,7 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
 
   public Iterator<O> keyIterator()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return new KeyIterator();
   }
 
   public boolean containsOrderingKey(Object orderingKey)
@@ -111,24 +120,102 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
 
   public ArrayList<O> keysInAscendingOrder()
   {
-    return null;
+    //ArrayList to store all the keys
+    //Final so we can access it in the anonymous Visitor class
+    final ArrayList<O> keyList = new ArrayList<O>();
+    
+    //Constructs a visitor that adds keys to the ArrayList
+    Visitor<O> keyVisitor = new Visitor<O>(){
+      public void visit(BSTNode<O> node)
+      {
+        keyList.add(node.data);
+      }   
+    };
+    
+    //Traverse through the tree with our new visitor
+    inOrderTraversal(keyVisitor);
+    
+    //Return the filled ArrayList.
+    return keyList;
   }
 
   public ArrayList<M> valuesInAscendingOrder()
   {
-    return null;
+    //ArrayList to store all the values
+    //Final so we can access it in the anonymous Visitor class
+    final ArrayList<M> valueList = new ArrayList<M>();
+    
+    //Constructs a visitor that adds values to the ArrayList
+    //Uses get from map to translate keys on the tree into values
+    Visitor<O> valueVisitor = new Visitor<O>(){
+      public void visit(BSTNode<O> node)
+      {
+        valueList.add(map.get(node.data));
+      }
+    };
+    
+    //Traverse through the tree with our new visitor
+    inOrderTraversal(valueVisitor);
+    
+    //Return the filled ArrayList.
+    return valueList;
   }
 
   public O ceiling(O orderingKey)
   {
-    // TODO Auto-generated method stub
+    BSTNode<O> current = root;
     return null;
   }
 
   public OrderedMapInterface<O, M> subMap(O fromKey, O toKey)
   {
+    //Construct a new OrderedMap
+    OrderedMap<O, M> newMap = new OrderedMap<O, M>();
     
-    return null;
+    //Get all the keys
+    ArrayList<O> keyList = this.keysInAscendingOrder();
+    
+    //Iterate through all the keys
+    for(O key : keyList)
+    {
+      //If the key is in range
+      if(key.compareTo(fromKey) >= 0 && key.compareTo(toKey) <= 0)
+      {
+        //We add the key and it's associated value to the new OrderedMap
+        newMap.put(key, map.get(key));
+      }
+    }
+    
+    //Return the new OrderedMap
+    return newMap;
+  }
+  
+  public void inOrderTraversal(Visitor<O> visitor)
+  {
+    //Stack to store unvisited nodes
+    Stack<BSTNode<O>> stack = new Stack<BSTNode<O>>();
+    
+    //Start at the root
+    BSTNode<O> node = root;
+    
+    //Iterate until the node is null, and the stack is empty.
+    while(!stack.isEmpty() || node != null)
+    {
+      //If the node is null, we add it to the stack and move to its left child.
+      if(node != null)
+      {
+        stack.push(node);
+        node = node.leftChild;
+      }
+      
+      //Otherwise we visit the node and move the the right child.
+      else
+      {
+        node = stack.pop();
+        visitor.visit(node);
+        node = node.rightChild;
+      }
+    }
   }
 
   /**
@@ -264,5 +351,25 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
         child.parent = parent;
       }
     }
+  }
+  
+  private class KeyIterator implements Iterator<O>
+  {
+
+    public boolean hasNext()
+    {
+      return false;
+    }
+
+    public O next()
+    {
+      return null;
+    }
+
+    public void remove()
+    {
+      
+    }
+    
   }
 }
