@@ -2,6 +2,8 @@ package edu.iastate.cs228.hw4;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,5 +51,26 @@ public class OrderedMapTest
     map2.remove(8);
     
     assertEquals("F", map2.get(new Integer(7)));
+  }
+  
+  @Test
+  public void testNullRemove()
+  {
+    
+    assertEquals(false, map.remove("A"));
+    map.put("A", new Integer(1));
+    assertEquals(false, map.remove("B"));
+  }
+  
+  @Test
+  public void testRemoveOrder()
+  {
+    map.put("B", new Integer(1));
+    map.put("A", new Integer(2));
+    map.put("C", new Integer(3));
+    map.remove("B");
+    ArrayList<String> keys = map.keysInAscendingOrder();
+    assertEquals("A", keys.get(0));
+    assertEquals("C", keys.get(1));
   }
 }

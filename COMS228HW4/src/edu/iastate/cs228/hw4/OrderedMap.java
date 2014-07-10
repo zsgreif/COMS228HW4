@@ -369,21 +369,40 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
   
   private class KeyIterator implements Iterator<O>
   {
-
+    private ArrayList<O> keys;
+    private int cursor;
+    private boolean removeAllowed;
+    
+    public KeyIterator()
+    {
+      cursor = 0;
+      keys = keysInAscendingOrder();
+    }
+    
     public boolean hasNext()
     {
-      return false;
+      return cursor < size;
     }
 
     public O next()
     {
-      return null;
+      cursor++;
+      removeAllowed = true;
+      return keys.get(cursor - 1);
     }
 
     public void remove()
     {
-      
+      if(removeAllowed)
+      {
+        //Will remove from the OrderedMap
+        OrderedMap.this.remove(keys.get(cursor-1));
+        removeAllowed = false;
+      }
+      else
+      {
+        throw new IllegalStateException();
+      }
     }
-    
   }
 }
