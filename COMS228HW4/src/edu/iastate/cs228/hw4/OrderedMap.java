@@ -173,11 +173,31 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
   public O ceiling(O orderingKey)
   {
     BSTNode<O> current = root;
+    
+    //keep track of the largest we've visited
     BSTNode<O> largest = null;
+    
+    //
     while(current != null)
     {
-      
+      if(orderingKey.compareTo(current.data) < 0)
+      {
+        if(largest == null || current.data.compareTo(largest.data) > 0)
+        {
+          largest = current;
+        }
+        current = current.leftChild;
+      }
+      else
+      {
+        current = current.rightChild;
+        if(largest == null || current.data.compareTo(largest.data) > 0)
+        {
+          largest = current;
+        }
+      }
     }
+    return largest.data;
   }
 
   public OrderedMapInterface<O, M> subMap(O fromKey, O toKey)
@@ -369,26 +389,38 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
   
   private class KeyIterator implements Iterator<O>
   {
-    private ArrayList<O> keys;
+    private Stack<BSTNode<O>> keys;
     private int cursor;
     private boolean removeAllowed;
+    private O previousValue;
     
     public KeyIterator()
     {
       cursor = 0;
-      keys = keysInAscendingOrder();
+      keys = new Stack<BSTNode<O>>();
+      keys.push(root);
     }
     
     public boolean hasNext()
     {
-      return cursor < keys.size();
+      return keys.isEmpty();
     }
     
     public O next()
     {
-      cursor++;
+      BSTNode<O> node = keys.pop();
+      previousValue = node.data;
+      if(node.rightChild != null)
+      {
+        node = node.rightChild;
+        while(node != null)
+        {
+          keys.push(node);
+          node = node.leftChild;
+        }
+      }
       removeAllowed = true;
-      return keys.get(cursor - 1);
+      return previousValue;
     }
     
     public void remove()
@@ -396,7 +428,7 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
       if(removeAllowed)
       {
         //Will remove from the OrderedMap
-        OrderedMap.this.remove(keys.get(cursor-1));
+        OrderedMap.this.remove(previousValue);
         removeAllowed = false;
       }
       else
