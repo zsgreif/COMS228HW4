@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Stack;
 
 /**
@@ -33,6 +34,9 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
     
     //Clear all the map values.
     map.clear();
+    
+    //reset size
+    size = 0;
   }
 
   public M get(Object orderingKey)
@@ -58,6 +62,9 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
 
   public boolean remove(Object orderingKey)
   {
+    if(orderingKey == null)
+      return false;
+    
     //Cast to a key.
     //Will throw an error if the value isn't the right type, but we would just throw an error anyway.
     O key = (O) orderingKey;
@@ -106,6 +113,7 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
     else
       removeNode(current);
     
+    map.remove(key);
     size--;
     return true;
   }
@@ -172,36 +180,28 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
 
   public O ceiling(O orderingKey)
   {
-    BSTNode<O> current = root;
+    //Get the keys in order
+    ArrayList<O> keys = keysInAscendingOrder();
     
-    //keep track of the largest we've visited
-    BSTNode<O> largest = null;
-    
-    //
-    while(current != null)
+    //Iterate through the keys
+    for(int i = 0; i < keys.size(); i++)
     {
-      if(orderingKey.compareTo(current.data) < 0)
+      //If we find a key that is larger, because they are in order, it must be the ceiling
+      if(keys.get(i).compareTo(orderingKey) > 0)
       {
-        if(largest == null || current.data.compareTo(largest.data) > 0)
-        {
-          largest = current;
-        }
-        current = current.leftChild;
-      }
-      else
-      {
-        current = current.rightChild;
-        if(largest == null || current.data.compareTo(largest.data) > 0)
-        {
-          largest = current;
-        }
+        return keys.get(i);
       }
     }
-    return largest.data;
+    
+    //We didn't find anything larger
+    return null;
   }
 
   public OrderedMapInterface<O, M> subMap(O fromKey, O toKey)
   {
+    if(fromKey == null || toKey == null || fromKey.compareTo(toKey) > 0)
+      return null;
+      
     //Construct a new OrderedMap
     OrderedMap<O, M> newMap = new OrderedMap<O, M>();
     
@@ -390,24 +390,33 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
   private class KeyIterator implements Iterator<O>
   {
     private Stack<BSTNode<O>> keys;
-    private int cursor;
     private boolean removeAllowed;
     private O previousValue;
     
     public KeyIterator()
     {
-      cursor = 0;
       keys = new Stack<BSTNode<O>>();
-      keys.push(root);
+      
+      BSTNode<O> node = root;
+      
+      while(node != null)
+      {
+        keys.push(node);
+        node = node.leftChild;
+      }
+      
     }
     
     public boolean hasNext()
     {
-      return keys.isEmpty();
+      return !keys.isEmpty();
     }
     
     public O next()
     {
+      if(!hasNext())
+        throw new NoSuchElementException();
+      
       BSTNode<O> node = keys.pop();
       previousValue = node.data;
       if(node.rightChild != null)
