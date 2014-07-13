@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.NoSuchElementException;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

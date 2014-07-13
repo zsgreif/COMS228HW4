@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.iastate.cs228.hw4;
 
 import java.util.ArrayList;
@@ -65,56 +62,88 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
     if(orderingKey == null)
       return false;
     
-    //Cast to a key.
-    //Will throw an error if the value isn't the right type, but we would just throw an error anyway.
     O key = (O) orderingKey;
-    
-    //Start searching for the node at the root
     BSTNode<O> current = root;
     
-    boolean foundKey = false;
-    
-    //Find the key using binary search
-    while(!foundKey)
+    //Find the node with the key.
+    while(current != null && current.data.compareTo(key) != 0)
     {
-      //If the node is null, we haven't found it.
-      if(current == null)
-        return false;
-      
       if(key.compareTo(current.data) < 0)
       {
         current = current.leftChild;
       }
-      else if(key.compareTo(current.data) > 0)
+      else
       {
         current = current.rightChild;
       }
-      else
+    }
+    
+    //orderingKey isn't in the tree.
+    if(current == null)
+    {
+      return false;
+    }
+    
+    //Find the successor.
+    BSTNode<O> successor = successor(current);
+    
+    //The node is a leaf.
+    if(successor == null)
+    {
+      //If the successor and parent are both null, it must be the root
+      if(current.parent == null)
       {
-        foundKey = true;
+        root = null;
+      }
+      //The node is the parent's left child
+      else if(key.compareTo(current.parent.data) < 0)
+      {
+        current.parent.leftChild = null;
+      }
+      //The node is the parent's right child
+      else if(key.compareTo(current.parent.data) > 0)
+      {
+        current.parent.rightChild = null;
       }
     }
     
-    //Find the successor node.
-    BSTNode<O> successor = successor(current);
-    
-    
-    
-    if(successor != null)
+    //The node has only one child.
+    else if(successor.equals(current.rightChild) && current.leftChild == null
+        || successor.equals(current.leftChild) && current.rightChild == null)
     {
-      //Put the successors data in the removal spot.
-      current.data = successor.data;    
+      //Swap the data between the successor and current.
+      O temp = current.data;
+      current.data = successor.data;
+      successor.data = temp;
       
-      //Successor should never have more than one child, so we are free to call removeNode to do our dirty work
-      removeNode(successor);
+      //Set current's children to the successor's children.
+      current.leftChild = successor.leftChild;
+      current.rightChild = successor.rightChild;
     }
     
-    //if there is no successor, the node must be a leaf
+    //The node has two children.
     else
-      removeNode(current);
+    {
+      //Swap the data between the successor and current.
+      O temp = current.data;
+      current.data = successor.data;
+      successor.data = temp;
+      
+      //We only went right once when finding successor
+      if(successor.parent.equals(current))
+      {
+        current.rightChild = successor.rightChild;
+      }
+      
+      //We went right, then left at least once.
+      else
+      {
+        successor.parent.leftChild = successor.rightChild;
+      }
+    }
     
-    map.remove(key);
     size--;
+    map.remove(key);
     return true;
   }
 
@@ -234,7 +263,7 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
     //Iterate until the node is null, and the stack is empty.
     while(!stack.isEmpty() || node != null)
     {
-      //If the node is null, we add it to the stack and move to its left child.
+      //If the node is not null, we add it to the stack and move to its left child.
       if(node != null)
       {
         stack.push(node);
@@ -312,78 +341,33 @@ public class OrderedMap<O extends Comparable<? super O>, M> implements OrderedMa
    */
   private BSTNode<O> successor(BSTNode<O> current)
   {
-    //If there are no children, there is no successor.
-    if(current.leftChild == null && current.rightChild == null)
+    //If both children are null, there is no successor.
+    if(current == null || (current.leftChild == null && current.rightChild == null))
+    {
       return null;
+    }
     
-    //If left is not null and right is null, left is the successor.
-    else if(current.leftChild != null && current.rightChild == null)
-      return current.leftChild;
-    
-    //If right is not null and left is null, right is the successor.
-    else if(current.rightChild == null && current.rightChild != null)
+    //If left is null and right is not, right is the successor.
+    else if(current.leftChild == null && current.rightChild != null)
+    {
       return current.rightChild;
+    }
     
-    //If there are two children, we return the node with the next greatest value
+    //If right is null and left is not, left is the successor.
+    else if(current.rightChild == null && current.leftChild != null)
+    {
+      return current.leftChild;
+    }
+    
     else
     {
-      BSTNode<O> successor = current.rightChild;
-      while(successor != null)
+      //Go right once, then left until we can't go left anymore.
+      current = current.rightChild;
+      while(current.leftChild != null)
       {
-        if(successor.leftChild == null)
-        {
-          break;
-        }
-        else
-        {
-          successor = successor.leftChild;
-        }
+        current = current.leftChild;
       }
-      return successor;
-    }
-  }
-  
-  /**
-   * Removes a node from the BST assuming it has either one or zero children.
-   * @param node - The node to be removed from the graph.
-   * @throws IllegalArgumentException If node has two children.
-   */
-  private void removeNode(BSTNode<O> node)
-  {
-    //We only remove nodes with zero or one children
-    if(node.leftChild != null && node.rightChild != null)
-      throw new IllegalArgumentException();
-    
-    BSTNode<O> parent = node.parent;
-    BSTNode<O> child = successor(node);
-    
-    //If the node has no parent, it must be the root.
-    if(parent == null)
-    {
-      //We nullify the child's parent and set the root to the child
-      if(child != null)
-        child.parent = null;
-      root = child;
-      return;
-    }
-    
-    //Changes the parent's child to the successor node.
-    //Will work correctly even if there is no successor
-    if(node.equals(parent.leftChild))
-    {
-      parent.leftChild = child;
-      if(child != null)
-      {
-        child.parent = parent;
-      }
-    }
-    else //node.equals(parent.rightChild)
-    {
-      parent.rightChild = child;
-      if(child != null)
-      {
-        child.parent = parent;
-      }
+      return current;
     }
   }
   
